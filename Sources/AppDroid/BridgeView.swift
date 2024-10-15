@@ -43,7 +43,7 @@ struct BridgeView : View {
                 .font(.title)
 
             // Kotlin->Swift->Kotlin sample
-            Text(getJavaSystemPropertyViaSwift(name: "java.io.tmpdir") ?? "none")
+            Text(getJavaSystemPropertyViaSwift("java.io.tmpdir") ?? "none")
                 .font(.body)
                 .monospaced()
 

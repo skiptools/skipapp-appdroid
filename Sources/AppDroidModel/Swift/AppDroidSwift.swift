@@ -18,12 +18,9 @@ public func callingEnvironment() -> String {
 }
 
 // SKIP @bridgeToKotlin
-public func getJavaSystemPropertyViaSwift(name: String) -> String? {
+public func getJavaSystemPropertyViaSwift(_ name: String) -> String? {
     getJavaSystemProperty(name)
 }
-
-// FIXME: cannot bridge unnamed parameters
-// public func getJavaSystemPropertyViaSwift(_ name: String) -> String?
 
 // SKIP @bridgeToKotlin
 public var bridgedString = "😀" + "🚀"
