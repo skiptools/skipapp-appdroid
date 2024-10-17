@@ -4,7 +4,7 @@
 
 import Foundation
 
-// SKIP @bridgeToKotlin
+// SKIP @BridgeToKotlin
 public func callingEnvironment() -> String {
     #if SKIP
     return "Skip"
@@ -17,18 +17,18 @@ public func callingEnvironment() -> String {
     #endif
 }
 
-// SKIP @bridgeToKotlin
+// SKIP @BridgeToKotlin
 public func getJavaSystemPropertyViaSwift(_ name: String) -> String? {
     getJavaSystemProperty(name)
 }
 
-// SKIP @bridgeToKotlin
+// SKIP @BridgeToKotlin
 public var bridgedString = "😀" + "🚀"
 
-// SKIP @bridgeToKotlin
+// SKIP @BridgeToKotlin
 public var swiftClosure1Var: (Int) -> String = { i in "value = \(i)" }
 
-// SKIP @bridgeToKotlin
+// SKIP @BridgeToKotlin
 public class SwiftClass {
     public var intVar = 1
     public var optionalIntVar: Int? = nil
@@ -42,7 +42,7 @@ public class SwiftClass {
 }
 
 
-// SKIP @bridgeToKotlin
+// SKIP @BridgeToKotlin
 public class ObservableFacade {
     // the un-bridged Observable implementation
     private let observable = ObservableClass()
