@@ -16,21 +16,24 @@ let package = Package(
     ],
     dependencies: [
         .package(url: "https://source.skip.tools/skip.git", from: "1.1.10"),
+        .package(url: "https://source.skip.tools/skip-foundation.git", from: "1.0.0"),
         .package(url: "https://source.skip.tools/skip-ui.git", from: "1.0.0"),
-        .package(url: "https://source.skip.tools/skip-bridge.git", branch: "main"),
+        .package(url: "https://source.skip.tools/skip-bridge.git", branch: "macros"),
         .package(url: "https://github.com/apple/swift-algorithms", from: "1.2.0"),
     ],
     targets: [
         .target(name: "AppDroid", dependencies: [
             "AppDroidModel",
-            .product(name: "SkipUI", package: "skip-ui", condition: .when(platforms: [.macOS, .iOS])),
+            .product(name: "SkipUI", package: "skip-ui"),
         ], resources: [.process("Resources")], plugins: [.plugin(name: "skipstone", package: "skip")]),
         .testTarget(name: "AppDroidTests", dependencies: [
             "AppDroid",
             .product(name: "SkipTest", package: "skip")
         ], resources: [.process("Resources")], plugins: [.plugin(name: "skipstone", package: "skip")]),
         .target(name: "AppDroidModel", dependencies: [
+            //.product(name: "SkipFoundation", package: "skip-foundation"),
             .product(name: "SkipBridge", package: "skip-bridge"),
+            .product(name: "SkipBridgeMacros", package: "skip-bridge"),
             .product(name: "Algorithms", package: "swift-algorithms"),
         ], resources: [.process("Resources")], plugins: [.plugin(name: "skipstone", package: "skip")]),
         .testTarget(name: "AppDroidModelTests", dependencies: [
