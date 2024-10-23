@@ -24,7 +24,18 @@ import struct SkipBridge.Observation
         color.values.opacity = Double.random(in: 0.0...1.0)
     }
 
-    public func slideValues() {
+    public func slideValues() { // (after: Double? = 0.0) {
+//        if let after = after {
+//            // FIXME: does not work on Android. Perhaps we need to manually start the DispatchQueue's run loop or something?
+//            DispatchQueue.main.asyncAfter(deadline: .now() + .milliseconds(Int(after * 1000.0))) {
+//                self.slideValueSet()
+//            }
+//        } else {
+            self.slideValueSet()
+//        }
+    }
+
+    private func slideValueSet() {
         slideValue(&color.values.hue)
         slideValue(&color.values.saturation)
         slideValue(&color.values.brightness)

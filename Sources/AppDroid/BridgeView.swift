@@ -4,6 +4,7 @@ import AppDroidModel
 struct BridgeView : View {
     @State var viewModel = ViewModel()
     @State var sliding = false
+    @State var slideSpeed = 0.01
 
     var body: some View {
         VStack {
@@ -40,20 +41,22 @@ struct BridgeView : View {
             .clipShape(RoundedRectangle(cornerRadius: 10.0))
 
             HStack {
-                VStack {
-                    Button("Shuffle") {
-                        viewModel.randomize()
-                    }
-                    .buttonStyle(.borderedProminent)
-                    Button("Shuffle (Async)") {
-                        Task { await viewModel.randomizeAsync() }
-                    }
-                    .buttonStyle(.bordered)
+                Button("Shuffle") {
+                    viewModel.randomize()
                 }
+                .buttonStyle(.borderedProminent)
+                Button("Shuffle (Async)") {
+                    Task { await viewModel.randomizeAsync() }
+                }
+                .buttonStyle(.bordered)
+            }
+
+            HStack {
                 Toggle("Auto-slide", isOn: $sliding)
                     .onChange(of: sliding) {
                         slideOnMain()
                     }
+                Slider(value: $slideSpeed, in: 0.00...0.1)
             }
             .font(.title2)
 
@@ -67,11 +70,10 @@ struct BridgeView : View {
     /// Keep sliding for as long as the `sliding` property is true.
     func slideOnMain() {
         if self.sliding {
-            DispatchQueue.main.async {
-            viewModel.slideValues()
-                DispatchQueue.main.async {
-                    slideOnMain()
-                }
+            DispatchQueue.main.asyncAfter(deadline: .now() + slideSpeed) {
+                //viewModel.slideValues(after: 0.1) // not working on Anrdoid
+                viewModel.slideValues()
+                slideOnMain()
             }
         }
     }
