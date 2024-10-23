@@ -37,19 +37,25 @@ struct BridgeView : View {
             }
             .padding(50.0)
             .background(Color(hue: viewModel.color.values.hue, saturation: viewModel.color.values.saturation, brightness: viewModel.color.values.brightness, opacity: viewModel.color.values.opacity))
+            .clipShape(RoundedRectangle(cornerRadius: 10.0))
 
             HStack {
-                Button("Shuffle") {
-                    viewModel.randomize()
-                    //Task { await viewModel.randomize(delay: 0.5) }
+                VStack {
+                    Button("Shuffle") {
+                        viewModel.randomize()
+                    }
+                    .buttonStyle(.borderedProminent)
+                    Button("Shuffle (Async)") {
+                        Task { await viewModel.randomizeAsync() }
+                    }
+                    .buttonStyle(.bordered)
                 }
-                .buttonStyle(.borderedProminent)
                 Toggle("Auto-slide", isOn: $sliding)
                     .onChange(of: sliding) {
                         slideOnMain()
                     }
             }
-            .font(.title)
+            .font(.title2)
 
             Spacer()
 

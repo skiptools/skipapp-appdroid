@@ -1,7 +1,7 @@
 import Foundation
 import Observation
 #if !SKIP
-// TODO: the transpiled should insert this automatically
+// TODO: the transpiler should insert this automatically
 import struct SkipBridge.Observation
 #endif
 
@@ -12,9 +12,12 @@ import struct SkipBridge.Observation
     public init() {
     }
 
+    public func randomizeAsync() async {
+        randomize()
+    }
+
     //public func randomize(delay: Double) async {
     public func randomize() {
-        //try? await Task.sleep(for: .milliseconds(delay * 1_000))
         color.values.hue = Double.random(in: 0.0...1.0)
         color.values.saturation = Double.random(in: 0.0...1.0)
         color.values.brightness = Double.random(in: 0.0...1.0)
