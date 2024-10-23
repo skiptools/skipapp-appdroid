@@ -1,74 +1,83 @@
 import SwiftUI
 import AppDroidModel
 
-/// The number of time body is called; intentionally a global variable and not @State because it is updated from within the `var body`
-var bodyCount = 0
-
-// TODO: implement bridged @Observable and make this a @State property
-let observableFacade = ObservableFacade()
-
 struct BridgeView : View {
-    @State var callbackCount: Int = 0
-    @State var callbackState: String = ""
-    @State var sliderValue = 50.0
-    @State var observedSliderValue = 50.0
-
-    // TODO: implement bridged @Observable
-    //@State var observableClass = ObservableClass()
+    @State var viewModel = ViewModel()
+    @State var sliding = false
 
     var body: some View {
-        // track the number of body executions
-        let _ = { bodyCount += 1 }()
         VStack {
+            Spacer()
+            HStack {
+                Text("H:")
+                Slider(value: $viewModel.color.values.hue, in: 0...1)
+                Text(percent(viewModel.color.values.hue))
+            }
+            HStack {
+                Text("S:")
+                Slider(value: $viewModel.color.values.saturation, in: 0...1)
+                Text(percent(viewModel.color.values.saturation))
+            }
+            HStack {
+                Text("B:")
+                Slider(value: $viewModel.color.values.brightness, in: 0...1)
+                Text(percent(viewModel.color.values.brightness))
+            }
+            HStack {
+                Text("A:")
+                Slider(value: $viewModel.color.values.opacity, in: 0...1)
+                Text(percent(viewModel.color.values.opacity))
+            }
+
             HStack {
                 Spacer()
-                Text("Bridge to \(callingEnvironment()): \(bodyCount)")
+                Text("HSL: \(percent(viewModel.color.hsl.reduce(0.0, +) / 4.0))")
+                    .font(.largeTitle)
                 Spacer()
             }
-                .font(.title2)
-                .bold()
-                .foregroundStyle(Color.white)
-                .background(Color.blue)
+            .padding(50.0)
+            .background(Color(hue: viewModel.color.values.hue, saturation: viewModel.color.values.saturation, brightness: viewModel.color.values.brightness, opacity: viewModel.color.values.opacity))
 
-            Spacer()
-
-            Text("Emoji: \(bridgedString)")
-                .font(.title)
-
-            Text("System Property:")
-                .font(.title)
-
-            // Kotlin->Swift->Kotlin sample
-            Text(getJavaSystemPropertyViaSwift("java.io.tmpdir") ?? "none")
-                .font(.body)
-                .monospaced()
-
-            Button("Callback: \(callbackState)") {
-                self.callbackCount += 1
-                self.callbackState = swiftClosure1Var(callbackCount)
+            HStack {
+                Button("Shuffle") {
+                    viewModel.randomize()
+                    //Task { await viewModel.randomize(delay: 0.5) }
+                }
+                .buttonStyle(.borderedProminent)
+                Toggle("Auto-slide", isOn: $sliding)
+                    .onChange(of: sliding) {
+                        slideOnMain()
+                    }
             }
-            .buttonStyle(.borderedProminent)
             .font(.title)
 
-            Slider(value: $sliderValue, in: 0...100)
-            HStack {
-                Text("Observed: \(Int64(observedSliderValue))")
-                Spacer()
-                Text("Current: \(Int64(sliderValue))")
-            }
+            Spacer()
 
             Spacer()
         }
         .padding()
-        .onAppear {
-            // setup the facade to call `withObservationTracking` with a callback that updates the local observedSliderValue state
-            observableFacade.callback = { d in
-                self.observedSliderValue = d
+    }
+
+    /// Keep sliding for as long as the `sliding` property is true.
+    func slideOnMain() {
+        if self.sliding {
+            DispatchQueue.main.async {
+            viewModel.slideValues()
+                DispatchQueue.main.async {
+                    slideOnMain()
+                }
             }
-        }
-        .onChange(of: sliderValue) { oldValue, newValue in
-            // update the observableFacade, which will update its internally-help ObservableInstance, which will trigger the observation callback
-            observableFacade.doubleVar = newValue
         }
     }
 }
+
+
+func percent(_ number: Double) -> String {
+    pfmt.string(from: number as NSNumber)!
+}
+
+let pfmt: NumberFormatter = {
+    let pfmt = NumberFormatter()
+    pfmt.numberStyle = .percent
+    return pfmt
+}()

@@ -33,7 +33,7 @@ let package = Package(
         .target(name: "AppDroidModel", dependencies: [
             //.product(name: "SkipFoundation", package: "skip-foundation"),
             .product(name: "SkipBridge", package: "skip-bridge"),
-            .product(name: "SkipBridgeMacros", package: "skip-bridge"),
+            //.product(name: "SkipBridgeMacros", package: "skip-bridge"),
             .product(name: "Algorithms", package: "swift-algorithms"),
         ], resources: [.process("Resources")], plugins: [.plugin(name: "skipstone", package: "skip")]),
         .testTarget(name: "AppDroidModelTests", dependencies: [

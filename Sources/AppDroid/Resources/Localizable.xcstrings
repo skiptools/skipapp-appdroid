@@ -1,6 +1,9 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
+    "A:" : {
+
+    },
     "Appearance" : {
       "localizations" : {
         "es" : {
@@ -29,26 +32,13 @@
         }
       }
     },
+    "Auto-slide" : {
+
+    },
+    "B:" : {
+
+    },
     "Bridge" : {
-
-    },
-    "Bridge to %@: %lld" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "Bridge to %1$@: %2$lld"
-          }
-        }
-      }
-    },
-    "Callback: %@" : {
-
-    },
-    "Current: %lf" : {
-
-    },
-    "Current: %lld" : {
 
     },
     "Dark" : {
@@ -79,7 +69,10 @@
         }
       }
     },
-    "Emoji: %@" : {
+    "H:" : {
+
+    },
+    "HSL: %@" : {
 
     },
     "Item %lld" : {
@@ -141,12 +134,6 @@
     "List" : {
 
     },
-    "Observed: %lf" : {
-
-    },
-    "Observed: %lld" : {
-
-    },
     "Powered by %@" : {
       "localizations" : {
         "es" : {
@@ -174,6 +161,9 @@
           }
         }
       }
+    },
+    "S:" : {
+
     },
     "Screen %lld" : {
       "localizations" : {
@@ -231,6 +221,9 @@
         }
       }
     },
+    "Shuffle" : {
+
+    },
     "System" : {
       "localizations" : {
         "es" : {
@@ -258,9 +251,6 @@
           }
         }
       }
-    },
-    "System Property:" : {
-
     }
   },
   "version" : "1.0"
