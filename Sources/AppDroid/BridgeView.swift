@@ -4,7 +4,6 @@ import AppDroidModel
 struct BridgeView : View {
     @State var viewModel = ViewModel()
     @State var sliding = false
-    @State var slideSpeed = 0.01
 
     var body: some View {
         VStack {
@@ -32,8 +31,8 @@ struct BridgeView : View {
 
             HStack {
                 Spacer()
-                Text("HSL: \(percent(viewModel.color.hsl.reduce(0.0, +) / 4.0))")
-                    .font(.largeTitle)
+                Text(viewModel.color.asRGBHexString)
+                    .font(.largeTitle.monospaced())
                     .foregroundStyle(viewModel.color.values.brightness < 0.5 && viewModel.color.values.opacity > 0.5 ? Color.white : Color.black)
                 Spacer()
             }
@@ -57,7 +56,7 @@ struct BridgeView : View {
                     .onChange(of: sliding) {
                         slideOnMain()
                     }
-                Slider(value: $slideSpeed, in: 0.00...0.1)
+                Slider(value: $viewModel.slideSpeed, in: 0.00...0.1)
             }
             .font(.title2)
 
@@ -71,7 +70,7 @@ struct BridgeView : View {
     /// Keep sliding for as long as the `sliding` property is true.
     func slideOnMain() {
         if self.sliding {
-            DispatchQueue.main.asyncAfter(deadline: .now() + slideSpeed) {
+            DispatchQueue.main.asyncAfter(deadline: .now() + viewModel.slideSpeed) {
                 //viewModel.slideValues(after: 0.1) // not working on Anrdoid
                 viewModel.slideValues()
                 slideOnMain()
