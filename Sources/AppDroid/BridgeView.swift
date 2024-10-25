@@ -34,6 +34,7 @@ struct BridgeView : View {
                 Spacer()
                 Text("HSL: \(percent(viewModel.color.hsl.reduce(0.0, +) / 4.0))")
                     .font(.largeTitle)
+                    .foregroundStyle(viewModel.color.values.brightness < 0.5 && viewModel.color.values.opacity > 0.5 ? Color.white : Color.black)
                 Spacer()
             }
             .padding(50.0)

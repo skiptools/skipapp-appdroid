@@ -1,5 +1,6 @@
 import XCTest
 import SkipBridge
+import Observation
 @testable import AppDroidModel
 
 @available(macOS 13, *)
@@ -20,5 +21,19 @@ final class AppDroidModelTests: XCTestCase {
 
     func testClosure() {
         XCTAssertEqual("value = 1", swiftClosure1Var(1))
+    }
+
+    func testObservable() {
+        let vm = ViewModel()
+        var changes = 0
+        XCTAssertEqual(vm.color.values.hue, 0.5)
+        #if !SKIP
+        let _ = withObservationTracking({ vm.color.values.hue }, onChange: { changes += 1 })
+        #endif
+        vm.color.values.hue += 0.1
+        XCTAssertEqual(vm.color.values.hue, 0.6)
+        #if !SKIP
+        XCTAssertEqual(changes, 1)
+        #endif
     }
 }
