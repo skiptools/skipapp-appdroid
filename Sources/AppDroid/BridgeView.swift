@@ -61,9 +61,14 @@ struct BridgeView : View {
 
             HStack {
                 Text("Speed:")
-                Slider(value: $viewModel.slideSpeed, in: 0.00...0.1)
+                Slider(value: $viewModel.slideSpeed, in: 0.00...1.0)
             }
 
+            Spacer()
+            Button("Crash!") {
+                viewModel.crash()
+            }
+            .buttonStyle(.bordered)
             Spacer()
         }
         .padding()

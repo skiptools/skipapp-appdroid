@@ -57,7 +57,7 @@ fileprivate let logger: Logger = Logger(subsystem: "AppDroid", category: #fileID
                 } else {
                     self.slideValues()
                 }
-                try await Task.sleep(for: Duration.milliseconds(self.slideSpeed * 1000.0))
+                try await Task.sleep(for: Duration.milliseconds((1.0 - self.slideSpeed) * 10.0))
             }
         }
     }
@@ -68,6 +68,8 @@ fileprivate let logger: Logger = Logger(subsystem: "AppDroid", category: #fileID
         #if os(Android)
         //CFRunLoopRunInMode(kCFRunLoopDefaultMode, 0.01, true) // doesn't work
         //dispatchMainQueueCallback(nil) // doesn't work
+        //RunLoop.main.run(until: Date.distantFuture)
+        //RunLoop.main.run()
         #endif
     }
 
@@ -107,6 +109,10 @@ fileprivate let logger: Logger = Logger(subsystem: "AppDroid", category: #fileID
                 value = 0.0
             }
         }
+    }
+
+    public func crash() {
+        fatalError("CRASH BUTTON TAPPED")
     }
 }
 
@@ -220,6 +226,8 @@ public class SwiftClass {
 }
 
 #if os(Android)
+import Dispatch
+
 // see: https://forums.swift.org/t/prepitch-using-mainactor-and-dispatchqueue-main-async-without-foundation/61274/2
 @_silgen_name("_dispatch_main_queue_callback_4CF")
 public func dispatchMainQueueCallback(_ msg: UnsafeMutableRawPointer?) -> Void
