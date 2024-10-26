@@ -1,5 +1,12 @@
 import Foundation
 import Observation
+import SkipBridge
+
+#if !os(Android)
+// TODO: Android-native logging module
+import OSLog
+fileprivate let logger: Logger = Logger(subsystem: "AppDroid", category: #fileID)
+#endif
 
 // SKIP @BridgeToKotlin
 @Observable public class ViewModel {
@@ -17,6 +24,9 @@ import Observation
     }
 
     public func randomizeAsync() async {
+        #if !os(Android)
+        logger.info("randomizeAsync invoked")
+        #endif
         randomize()
     }
 
@@ -29,14 +39,14 @@ import Observation
     }
 
     public func slideValues() { // (after: Double? = 0.0) {
-//        if let after = after {
-//            // FIXME: does not work on Android. Perhaps we need to manually start the DispatchQueue's run loop or something?
-//            DispatchQueue.main.asyncAfter(deadline: .now() + .milliseconds(Int(after * 1000.0))) {
-//                self.slideValueSet()
-//            }
-//        } else {
-            self.slideValueSet()
-//        }
+        self.slideValueSet()
+
+        // FIXME: does not work on Android. Perhaps we need to manually start the DispatchQueue's run loop or something?
+        // if let after = after {
+        //     DispatchQueue.main.asyncAfter(deadline: .now() + seconds(Int(after * 1000.0))) {
+        //         self.slideValueSet()
+        //     }
+        // }
     }
 
     private func slideValueSet() {
@@ -61,12 +71,11 @@ import Observation
     }
 }
 
-protocol Randomizable where Self : Comparable {
+fileprivate protocol Randomizable where Self : Comparable {
     mutating func randomize(in: ClosedRange<Self>)
 }
 
-
-/// An example of a feature that isn't supported in Skip
+/// An example of Swift language features (retroactive protocol conformance and mutating self) that aren't available in Skip-transpiled code.
 extension Double : Randomizable {
     mutating func randomize(in range: ClosedRange<Self>) {
         self = Self.random(in: range)
