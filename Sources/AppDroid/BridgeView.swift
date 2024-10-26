@@ -3,10 +3,20 @@ import AppDroidModel
 
 struct BridgeView : View {
     @State var viewModel = ViewModel()
-    @State var sliding = false
 
     var body: some View {
         VStack {
+            HStack {
+                Spacer()
+                Text(viewModel.color.asRGBHexString)
+                    .font(.largeTitle.monospaced())
+                    .foregroundStyle(viewModel.color.values.brightness < 0.5 && viewModel.color.values.opacity > 0.5 ? Color.white : Color.black)
+                Spacer()
+            }
+            .padding(50.0)
+            .background(Color(hue: viewModel.color.values.hue, saturation: viewModel.color.values.saturation, brightness: viewModel.color.values.brightness, opacity: viewModel.color.values.opacity))
+            .clipShape(RoundedRectangle(cornerRadius: 10.0))
+
             Spacer()
             HStack {
                 Text("H:")
@@ -29,16 +39,7 @@ struct BridgeView : View {
                 Text(percent(viewModel.color.values.opacity))
             }
 
-            HStack {
-                Spacer()
-                Text(viewModel.color.asRGBHexString)
-                    .font(.largeTitle.monospaced())
-                    .foregroundStyle(viewModel.color.values.brightness < 0.5 && viewModel.color.values.opacity > 0.5 ? Color.white : Color.black)
-                Spacer()
-            }
-            .padding(50.0)
-            .background(Color(hue: viewModel.color.values.hue, saturation: viewModel.color.values.saturation, brightness: viewModel.color.values.brightness, opacity: viewModel.color.values.opacity))
-            .clipShape(RoundedRectangle(cornerRadius: 10.0))
+            Divider()
 
             HStack {
                 Button("Shuffle") {
@@ -50,32 +51,22 @@ struct BridgeView : View {
                 }
                 .buttonStyle(.bordered)
             }
+            .font(.title2.bold())
 
             HStack {
-                Toggle("Auto-slide", isOn: $sliding)
-                    .onChange(of: sliding) {
-                        slideOnMain()
-                    }
-                Slider(value: $viewModel.slideSpeed, in: 0.00...0.1)
+                Toggle("Auto-slide", isOn: $viewModel.autoSlide)
+                Toggle("MainActor", isOn: $viewModel.useMainActor)
             }
             .font(.title2)
 
-            Spacer()
+            HStack {
+                Text("Speed:")
+                Slider(value: $viewModel.slideSpeed, in: 0.00...0.1)
+            }
 
             Spacer()
         }
         .padding()
-    }
-
-    /// Keep sliding for as long as the `sliding` property is true.
-    func slideOnMain() {
-        if self.sliding {
-            DispatchQueue.main.asyncAfter(deadline: .now() + viewModel.slideSpeed) {
-                //viewModel.slideValues(after: 0.1) // not working on Anrdoid
-                viewModel.slideValues()
-                slideOnMain()
-            }
-        }
     }
 }
 

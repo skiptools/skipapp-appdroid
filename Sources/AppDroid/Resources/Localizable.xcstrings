@@ -131,6 +131,9 @@
     "List" : {
 
     },
+    "MainActor" : {
+
+    },
     "Powered by %@" : {
       "localizations" : {
         "es" : {
@@ -222,6 +225,9 @@
 
     },
     "Shuffle (Async)" : {
+
+    },
+    "Speed:" : {
 
     },
     "System" : {

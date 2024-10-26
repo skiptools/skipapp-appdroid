@@ -1,4 +1,5 @@
 import Foundation
+import CoreFoundation
 import Observation
 import SkipBridge
 
@@ -11,6 +12,15 @@ fileprivate let logger: Logger = Logger(subsystem: "AppDroid", category: #fileID
 // SKIP @BridgeToKotlin
 @Observable public class ViewModel {
     public var color = ColorModel()
+    public var useMainActor: Bool = false
+
+    public var autoSlide: Bool = false {
+        didSet {
+            if autoSlide {
+                startAutosliding()
+            }
+        }
+    }
 
     /// A persistent value that stores the speed of the auto-slide feature.
     public var slideSpeed: Double = getDoublePreference("slideSpeed") {
@@ -38,6 +48,34 @@ fileprivate let logger: Logger = Logger(subsystem: "AppDroid", category: #fileID
         color.values.opacity.randomize(in: 0.0...1.0)
     }
 
+    private func startAutosliding() {
+        Task {
+            while self.autoSlide == true {
+                if self.useMainActor == true {
+                    await self.slideValuesMain()
+                    self.dispatchMain()
+                } else {
+                    self.slideValues()
+                }
+                try await Task.sleep(for: Duration.milliseconds(self.slideSpeed * 1000.0))
+            }
+        }
+    }
+
+    private func dispatchMain() {
+        // FIXME: MainActor call doesn't work on Android (probably related to DispatchQueue.main.async also not working)
+        // https://forums.swift.org/t/prepitch-using-mainactor-and-dispatchqueue-main-async-without-foundation/61274/2
+        #if os(Android)
+        //CFRunLoopRunInMode(kCFRunLoopDefaultMode, 0.01, true) // doesn't work
+        //dispatchMainQueueCallback(nil) // doesn't work
+        #endif
+    }
+
+    /// Bump the values on the main actor – not currently working on Android
+    @MainActor private func slideValuesMain() {
+        self.slideValueSet()
+    }
+
     public func slideValues() { // (after: Double? = 0.0) {
         self.slideValueSet()
 
@@ -56,6 +94,7 @@ fileprivate let logger: Logger = Logger(subsystem: "AppDroid", category: #fileID
         slideValue(&color.values.opacity)
     }
 
+    /// Bumps the value up or down between 0.0 and 1.0.
     private func slideValue(_ value: inout Double) {
         if Int64((value * 1000.0).rounded(.toNearestOrEven)) % 2 == 0 {
             value += 0.002
@@ -179,3 +218,9 @@ public class SwiftClass {
         "SwiftClass"
     }
 }
+
+#if os(Android)
+// see: https://forums.swift.org/t/prepitch-using-mainactor-and-dispatchqueue-main-async-without-foundation/61274/2
+@_silgen_name("_dispatch_main_queue_callback_4CF")
+public func dispatchMainQueueCallback(_ msg: UnsafeMutableRawPointer?) -> Void
+#endif
