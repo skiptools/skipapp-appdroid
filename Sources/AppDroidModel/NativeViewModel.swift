@@ -1,13 +1,13 @@
 import Foundation
-import CoreFoundation
 import Observation
 import SkipBridge
-
-#if !os(Android)
-// TODO: Android-native logging module
+#if os(Android)
+import AndroidOSLog
+#else
 import OSLog
-fileprivate let logger: Logger = Logger(subsystem: "AppDroid", category: #fileID)
 #endif
+
+fileprivate let logger: Logger = Logger(subsystem: "AppDroid", category: "NativeViewModel")
 
 // SKIP @BridgeToKotlin
 @Observable public class ViewModel {
@@ -34,9 +34,7 @@ fileprivate let logger: Logger = Logger(subsystem: "AppDroid", category: #fileID
     }
 
     public func randomizeAsync() async {
-        #if !os(Android)
         logger.info("randomizeAsync invoked")
-        #endif
         randomize()
     }
 
@@ -111,8 +109,20 @@ fileprivate let logger: Logger = Logger(subsystem: "AppDroid", category: #fileID
         }
     }
 
+    public func throwError() throws {
+        throw NativeError(errorDescription: "Native Swift Error")
+    }
+
     public func crash() {
         fatalError("CRASH BUTTON TAPPED")
+    }
+}
+
+struct NativeError: LocalizedError {
+    let errorDescription: String?
+
+    init(errorDescription: String) {
+        self.errorDescription = errorDescription
     }
 }
 

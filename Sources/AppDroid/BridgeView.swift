@@ -3,6 +3,7 @@ import AppDroidModel
 
 struct BridgeView : View {
     @State var viewModel = ViewModel()
+    @State var errorMessage: String = ""
 
     var body: some View {
         VStack {
@@ -65,10 +66,28 @@ struct BridgeView : View {
             }
 
             Spacer()
-            Button("Crash!") {
-                viewModel.crash()
+
+            HStack {
+                Button("Throw!") {
+                    do {
+                        try viewModel.throwError()
+                    } catch {
+                        self.errorMessage = error.localizedDescription
+                    }
+                }
+                .buttonStyle(.bordered)
+
+                Button("Crash!") {
+                    viewModel.crash()
+                }
+                .buttonStyle(.bordered)
             }
-            .buttonStyle(.bordered)
+            .font(.title3)
+
+            Text(errorMessage)
+                .font(.headline)
+                .foregroundStyle(.red)
+
             Spacer()
         }
         .padding()
