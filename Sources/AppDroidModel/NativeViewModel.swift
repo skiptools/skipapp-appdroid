@@ -1,11 +1,15 @@
 import Foundation
 import Observation
 import SkipBridge
-#if os(Android)
+#if canImport(AndroidLogging)
 import AndroidLogging
+#elseif canImport(OSLog)
+import OSLog
+#endif
+
+#if os(Android)
 let isAndroid = true
 #else
-import OSLog
 let isAndroid = false
 #endif
 
