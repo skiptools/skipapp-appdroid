@@ -3,6 +3,7 @@ import AppDroidModel
 
 struct BridgeView : View {
     @State var viewModel = ViewModel()
+    @State var resultMessage: String = ""
     @State var errorMessage: String = ""
 
     var body: some View {
@@ -67,22 +68,42 @@ struct BridgeView : View {
 
             Spacer()
 
-            HStack {
-                Button("Throw!") {
+            LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())]) {
+                Button("Parse") {
+                    do {
+                        self.resultMessage = try viewModel.parseSampleResources()
+                    } catch {
+                        self.errorMessage = error.localizedDescription
+                    }
+                }
+                .foregroundStyle(Color.blue)
+
+                Button("Throw") {
                     do {
                         try viewModel.throwError()
                     } catch {
                         self.errorMessage = error.localizedDescription
                     }
                 }
-                .buttonStyle(.bordered)
+                .foregroundStyle(Color.orange)
 
-                Button("Crash!") {
+                Button("Crash") {
                     viewModel.crash()
                 }
-                .buttonStyle(.bordered)
+                .foregroundStyle(Color.red)
+
+                Button("DynReplace") {
+                    self.resultMessage = viewModel.dynamicReplacementString()
+                }
+                .foregroundStyle(Color.green)
             }
+            .buttonStyle(.bordered)
             .font(.title3)
+            .frame(minHeight: 120.0) // LazyVGrid doesn't seem to take up all the space in SkipUI
+
+            Text(resultMessage)
+                .font(.headline)
+                .foregroundStyle(.green)
 
             Text(errorMessage)
                 .font(.headline)

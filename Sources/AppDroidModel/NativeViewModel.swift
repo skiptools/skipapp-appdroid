@@ -3,8 +3,10 @@ import Observation
 import SkipBridge
 #if os(Android)
 import AndroidOSLog
+let isAndroid = true
 #else
 import OSLog
+let isAndroid = false
 #endif
 
 fileprivate let logger: Logger = Logger(subsystem: "AppDroid", category: "NativeViewModel")
@@ -35,7 +37,13 @@ fileprivate let logger: Logger = Logger(subsystem: "AppDroid", category: "Native
 
     public func randomizeAsync() async {
         logger.info("randomizeAsync invoked")
-        randomize()
+        if self.useMainActor {
+            DispatchQueue.main.async {
+                self.randomize()
+            }
+        } else {
+            randomize()
+        }
     }
 
     //public func randomize(delay: Double) async {
@@ -63,12 +71,12 @@ fileprivate let logger: Logger = Logger(subsystem: "AppDroid", category: "Native
     private func dispatchMain() {
         // FIXME: MainActor call doesn't work on Android (probably related to DispatchQueue.main.async also not working)
         // https://forums.swift.org/t/prepitch-using-mainactor-and-dispatchqueue-main-async-without-foundation/61274/2
-        #if os(Android)
+#if os(Android)
         //CFRunLoopRunInMode(kCFRunLoopDefaultMode, 0.01, true) // doesn't work
         //dispatchMainQueueCallback(nil) // doesn't work
         //RunLoop.main.run(until: Date.distantFuture)
         //RunLoop.main.run()
-        #endif
+#endif
     }
 
     /// Bump the values on the main actor – not currently working on Android
@@ -109,8 +117,36 @@ fileprivate let logger: Logger = Logger(subsystem: "AppDroid", category: "Native
         }
     }
 
+    public func parseSampleResources() throws -> String {
+        // Unused because we don't yet have any way of getting resources from the Android Swift side
+        #if os(Android)
+        // PackageResources is not implemented in Xcode's resource handling
+        // https://github.com/swiftlang/swift-package-manager/issues/6969
+        //let resourceData = Data(PackageResources.sample_resource_json)
+        #endif
+        //let resourceData = try! Data(contentsOf: Bundle.module.url(forResource: "sample_resource", withExtension: "json")!)
+
+        // call up to Kotlin to use SkipFoundation.Bundle.module to get the resource contents
+        guard let resourceData = try loadModuleBundleResourceContents(name: "sample_resource", extension: "json")?.data(using: .utf8) else {
+            throw NativeError(errorDescription: "Could not load resource")
+        }
+        let sample = try JSONDecoder().decode(SampleResource.self, from: resourceData)
+        return sample.message
+    }
+
+    public func dynamicReplacementString() -> String {
+        DemoClass().oldFunction()
+    }
+
+    struct SampleResource : Decodable {
+        public let message: String
+    }
+
+
     public func throwError() throws {
-        throw NativeError(errorDescription: "Native Swift Error")
+        // TODO: implement Android resources for NSLocalizedString
+        // 10-27 12:08:20.520 19166 19166 F DEBUG   : Abort message: 'AppDroidModel/resource_bundle_accessor.swift:12: Fatal error: could not load resource bundle: from /system/bin/skipapp-appdroid_AppDroidModel.resources or /Users/marc/Library/Developer/Xcode/DerivedData/Skip-Everything-aqywrhrzhkbvfseiqgxuufbdwdft/SourcePackages/plugins/skipapp-appdroid.output/AppDroidModel/skipstone/AppDroidModel/src/main/swift/.build/aarch64-unknown-linux-android24/debug/skipapp-appdroid_AppDroidModel.resources'
+        throw NativeError(errorDescription: isAndroid ? "Native Swift Error" : NSLocalizedString("Native Swift Error", bundle: .module, comment: "localized error message"))
     }
 
     public func crash() {
@@ -123,17 +159,6 @@ struct NativeError: LocalizedError {
 
     init(errorDescription: String) {
         self.errorDescription = errorDescription
-    }
-}
-
-fileprivate protocol Randomizable where Self : Comparable {
-    mutating func randomize(in: ClosedRange<Self>)
-}
-
-/// An example of Swift language features (retroactive protocol conformance and mutating self) that aren't available in Skip-transpiled code.
-extension Double : Randomizable {
-    mutating func randomize(in range: ClosedRange<Self>) {
-        self = Self.random(in: range)
     }
 }
 
@@ -197,6 +222,16 @@ extension Double : Randomizable {
     }
 }
 
+fileprivate protocol Randomizable where Self : Comparable {
+    mutating func randomize(in: ClosedRange<Self>)
+}
+
+/// An example of Swift language features (retroactive protocol conformance and mutating self) that aren't available in Skip-transpiled code.
+extension Double : Randomizable {
+    mutating func randomize(in range: ClosedRange<Self>) {
+        self = Self.random(in: range)
+    }
+}
 
 // SKIP @BridgeToKotlin
 public func callingEnvironment() -> String {
@@ -234,6 +269,63 @@ public class SwiftClass {
         "SwiftClass"
     }
 }
+
+class DemoClass {
+    init() {
+    }
+
+    dynamic var oldValue: String {
+        return "This is the old value."
+    }
+
+    dynamic func oldFunction() -> String {
+        return "This is the old function"
+    }
+
+    /*dynamic*/ func nonDynamicFunction() -> String {
+        return "This is the old nondynamic function"
+    }
+}
+
+extension DemoClass {
+    @_dynamicReplacement(for: oldValue)
+    var newNumber: String {
+        return "This is the new value."
+    }
+
+    @_dynamicReplacement(for: oldFunction())
+    func newFunction() -> String {
+        //let prev = DemoClass().oldFunction()
+        return "This is the new function"
+    }
+
+    // needs: swift build -Xswiftc -Xfrontend -Xswiftc -enable-dynamic-replacement-chaining -Xswiftc -Xfrontend -Xswiftc -enable-implicit-dynamic
+//    #if os(Android)
+//    @_dynamicReplacement(for: nonDynamicFunction())
+//    func newNonDynamicFunction() -> String {
+//        return "This is the new nondynamic function"
+//    }
+//    #endif
+}
+
+//extension Bundle {
+//    static var module: Bundle {
+//        fatalError("TODO")
+//    }
+//}
+
+//#if !os(Android)
+//extension Bundle {
+//    @_dynamicReplacement(for: url(forResource:withExtension:))
+//    public func replacementURL(forResource name: String?, withExtension ext: String?) -> URL? {
+////        fatalError("### replacementURL")
+//        logger.info("### url: forResource: \(name ?? "") withExtension: \(ext ?? "")")
+//        return self.url(forResource: name, withExtension: ext)
+////        guard let path = path(forResource: name, ofType: ext) else { return nil }
+////        return URL(fileURLWithPath: path)
+//    }
+//}
+//#endif
 
 #if os(Android)
 import Dispatch

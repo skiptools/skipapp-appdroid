@@ -22,3 +22,13 @@ func setDoublePreference(_ name: String, value: Double) {
     logger.info("setDoublePreference: \(name) = \(value)")
     UserDefaults.standard.set(value, forKey: name)
 }
+
+// SKIP @BridgeToSwift
+func loadModuleBundleResourceContents(name: String, extension ext: String) throws -> String? {
+    guard let url = Bundle.module.url(forResource: name, withExtension: ext) else {
+        return nil
+    }
+    // TODO: make this Data, which requires that it be a bridged type
+    return try String(contentsOf: url, encoding: .utf8)
+}
+

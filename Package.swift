@@ -36,7 +36,7 @@ let package = Package(
             .product(name: "SkipModel", package: "skip-model"),
             .product(name: "Algorithms", package: "swift-algorithms"),
             .product(name: "AndroidOSLog", package: "swift-android-oslog", /*moduleAliases: ["AndroidOSLog": "OSLog"],*/ condition: .when(platforms: [.android])),
-        ], resources: [.process("Resources")], plugins: [.plugin(name: "skipstone", package: "skip")]),
+        ], resources: [.process("Resources"), /*.embedInCode("CodeResources/sample_resource.json")*/], plugins: [.plugin(name: "skipstone", package: "skip")]),
         .testTarget(name: "AppDroidModelTests", dependencies: [
             "AppDroidModel",
             .product(name: "SkipTest", package: "skip")
