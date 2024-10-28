@@ -2,7 +2,7 @@ import Foundation
 import Observation
 import SkipBridge
 #if os(Android)
-import AndroidOSLog
+import AndroidLogging
 let isAndroid = true
 #else
 import OSLog

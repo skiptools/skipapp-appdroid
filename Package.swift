@@ -19,7 +19,7 @@ let package = Package(
         .package(url: "https://source.skip.tools/skip-model.git", from: "1.0.0"),
         .package(url: "https://source.skip.tools/skip-ui.git", from: "1.0.0"),
         .package(url: "https://source.skip.tools/skip-bridge.git", branch: "main"),
-        .package(url: "https://source.skip.tools/swift-android-oslog.git", branch: "main"),
+        .package(url: "https://source.skip.tools/swift-android-native.git", branch: "main"),
         .package(url: "https://github.com/apple/swift-algorithms.git", from: "1.2.0"),
     ],
     targets: [
@@ -35,7 +35,7 @@ let package = Package(
             .product(name: "SkipBridge", package: "skip-bridge"),
             .product(name: "SkipModel", package: "skip-model"),
             .product(name: "Algorithms", package: "swift-algorithms"),
-            .product(name: "AndroidOSLog", package: "swift-android-oslog", /*moduleAliases: ["AndroidOSLog": "OSLog"],*/ condition: .when(platforms: [.android])),
+            .product(name: "AndroidLogging", package: "swift-android-native", /*moduleAliases: ["AndroidLogging": "OSLog"],*/ condition: .when(platforms: [.android])),
         ], resources: [.process("Resources"), /*.embedInCode("CodeResources/sample_resource.json")*/], plugins: [.plugin(name: "skipstone", package: "skip")]),
         .testTarget(name: "AppDroidModelTests", dependencies: [
             "AppDroidModel",
