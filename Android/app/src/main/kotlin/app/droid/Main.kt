@@ -33,7 +33,7 @@ open class AndroidAppMain: Application {
         ProcessInfo.launch(applicationContext)
 
         logger.info("loading AppDroidModel")
-        System.loadLibrary("AppDroidModel")
+        skip.android.bridge.AndroidBridge.initBridge("AppDroidModel")
         logger.info("loaded AppDroidModel")
     }
 

@@ -1,5 +1,6 @@
 import SwiftUI
 import AppDroidModel
+//import SkipAndroidBridge
 
 struct BridgeView : View {
     @State var viewModel = ViewModel()
@@ -68,38 +69,78 @@ struct BridgeView : View {
 
             Spacer()
 
-            LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())]) {
-                Button("Parse") {
-                    do {
-                        self.resultMessage = try viewModel.parseSampleResources()
-                    } catch {
-                        self.errorMessage = error.localizedDescription
+            VStack(spacing: 5) {
+                HStack {
+                    Button("Parse JSON") {
+                        (self.resultMessage, self.errorMessage) = ("", "")
+                        do {
+                            self.resultMessage = try viewModel.parseSampleResources()
+                        } catch {
+                            self.errorMessage = error.localizedDescription
+                        }
                     }
-                }
-                .foregroundStyle(Color.blue)
+                    .accessibilityIdentifier("parseJSONButton")
+                    .accessibilityLabel("parseJSONButton")
+                    .foregroundStyle(Color.blue)
 
-                Button("Throw") {
-                    do {
-                        try viewModel.throwError()
-                    } catch {
-                        self.errorMessage = error.localizedDescription
+                    Button("HTTP") {
+                        (self.resultMessage, self.errorMessage) = ("", "")
+                        Task {
+                            do {
+                                self.resultMessage = "HTTP: " + (try await viewModel.parseRemoteResources(secure: false))
+                            } catch {
+                                self.errorMessage = error.localizedDescription
+                            }
+                        }
                     }
-                }
-                .foregroundStyle(Color.orange)
+                    .foregroundStyle(Color.cyan)
 
-                Button("Crash") {
-                    viewModel.crash()
+                    Button("HTTPS") {
+                        (self.resultMessage, self.errorMessage) = ("", "")
+                        Task {
+                            do {
+                                self.resultMessage = "HTTPS: " + (try await viewModel.parseRemoteResources(secure: true))
+                            } catch {
+                                self.errorMessage = error.localizedDescription
+                            }
+                        }
+                    }
+                    .foregroundStyle(Color.purple)
                 }
-                .foregroundStyle(Color.red)
+                .buttonStyle(.bordered)
+                .font(.title3)
 
-                Button("DynReplace") {
-                    self.resultMessage = viewModel.dynamicReplacementString()
+                HStack {
+                    Button("Context") {
+                        (self.resultMessage, self.errorMessage) = ("", "")
+                        do {
+                            let fileURL = viewModel.fileURL()
+                            self.resultMessage = "FILES: \(fileURL.path)"
+                        } catch {
+                            self.errorMessage = error.localizedDescription
+                        }
+                    }
+                    .foregroundStyle(Color.mint)
+
+                    Button("Throw") {
+                        (self.resultMessage, self.errorMessage) = ("", "")
+                        do {
+                            try viewModel.throwError()
+                        } catch {
+                            self.errorMessage = error.localizedDescription
+                        }
+                    }
+                    .foregroundStyle(Color.orange)
+
+                    Button("Crash") {
+                        (self.resultMessage, self.errorMessage) = ("", "")
+                        viewModel.crash()
+                    }
+                    .foregroundStyle(Color.red)
                 }
-                .foregroundStyle(Color.green)
+                .buttonStyle(.bordered)
+                .font(.title3)
             }
-            .buttonStyle(.bordered)
-            .font(.title3)
-            .frame(minHeight: 120.0) // LazyVGrid doesn't seem to take up all the space in SkipUI
 
             Text(resultMessage)
                 .font(.headline)

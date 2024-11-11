@@ -1,6 +1,8 @@
 import XCTest
+import Foundation
 import SkipBridge
 import Observation
+import SkipAndroidBridge
 @testable import AppDroidModel
 
 @available(macOS 13, *)
@@ -21,6 +23,10 @@ final class AppDroidModelTests: XCTestCase {
 
     func testClosure() {
         XCTAssertEqual("value = 1", swiftClosure1Var(1))
+    }
+
+    func testAndroidBridgeHelper() {
+        XCTAssertEqual("AB", testSupport_appendStrings("A", "B"))
     }
 
     func testObservable() {

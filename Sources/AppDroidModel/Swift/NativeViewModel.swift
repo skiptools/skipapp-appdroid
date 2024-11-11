@@ -1,19 +1,11 @@
 import Foundation
 import Observation
-import SkipBridge
-#if canImport(AndroidLogging)
-import AndroidLogging
-#elseif canImport(OSLog)
-import OSLog
-#endif
-
-#if os(Android)
-let isAndroid = true
-#else
-let isAndroid = false
-#endif
+import SkipAndroidBridge
 
 fileprivate let logger: Logger = Logger(subsystem: "AppDroid", category: "NativeViewModel")
+
+// doesn't work to intercept `extension ViewModel: Observation.Observable { }` added by @Observable…
+//extension ViewModel { typealias Observation = SkipBridge.Observation }
 
 // SKIP @BridgeToKotlin
 @Observable public class ViewModel {
@@ -28,6 +20,10 @@ fileprivate let logger: Logger = Logger(subsystem: "AppDroid", category: "Native
         }
     }
 
+    public func fileURL() -> URL {
+        URL.applicationSupportDirectory
+    }
+
     /// A persistent value that stores the speed of the auto-slide feature.
     public var slideSpeed: Double = getDoublePreference("slideSpeed") {
         didSet {
@@ -37,6 +33,7 @@ fileprivate let logger: Logger = Logger(subsystem: "AppDroid", category: "Native
     }
 
     public init() {
+        try! initAndroidBridge()
     }
 
     public func randomizeAsync() async {
@@ -131,21 +128,35 @@ fileprivate let logger: Logger = Logger(subsystem: "AppDroid", category: "Native
         //let resourceData = try! Data(contentsOf: Bundle.module.url(forResource: "sample_resource", withExtension: "json")!)
 
         // call up to Kotlin to use SkipFoundation.Bundle.module to get the resource contents
-        guard let resourceData = try loadModuleBundleResourceContents(name: "sample_resource", extension: "json")?.data(using: .utf8) else {
+        guard let resourceData = try loadModuleBundleResourceContents(name: "sample_resource", ext: "json")?.data(using: .utf8) else {
             throw NativeError(errorDescription: "Could not load resource")
         }
         let sample = try JSONDecoder().decode(SampleResource.self, from: resourceData)
         return sample.message
     }
 
-    public func dynamicReplacementString() -> String {
-        DemoClass().oldFunction()
-    }
-
     struct SampleResource : Decodable {
         public let message: String
     }
 
+    public func parseRemoteResources(secure: Bool) async throws -> String {
+        let `protocol` = (secure ? "https" : "http")
+        let (data, response) = try await URLSession.shared.data(from: URL(string:  "\(`protocol`)://jsonplaceholder.typicode.com/todos/1")!)
+        if !(200..<300).contains((response as? HTTPURLResponse)?.statusCode ?? 0) {
+            throw NativeError(errorDescription: "Bad response for request: \(response)")
+        }
+
+        let user = try JSONDecoder().decode(SampleUser.self, from: data)
+        return user.title
+    }
+
+    /// Sample from https://jsonplaceholder.typicode.com
+    struct SampleUser : Identifiable, Decodable {
+        let userId: Int
+        let id: Int
+        let title: String
+        let completed: Bool
+    }
 
     public func throwError() throws {
         // TODO: implement Android resources for NSLocalizedString
@@ -273,68 +284,3 @@ public class SwiftClass {
         "SwiftClass"
     }
 }
-
-class DemoClass {
-    init() {
-    }
-
-    dynamic var oldValue: String {
-        return "This is the old value."
-    }
-
-    dynamic func oldFunction() -> String {
-        return "This is the old function"
-    }
-
-    /*dynamic*/ func nonDynamicFunction() -> String {
-        return "This is the old nondynamic function"
-    }
-}
-
-extension DemoClass {
-    @_dynamicReplacement(for: oldValue)
-    var newNumber: String {
-        return "This is the new value."
-    }
-
-    @_dynamicReplacement(for: oldFunction())
-    func newFunction() -> String {
-        //let prev = DemoClass().oldFunction()
-        return "This is the new function"
-    }
-
-    // needs: swift build -Xswiftc -Xfrontend -Xswiftc -enable-dynamic-replacement-chaining -Xswiftc -Xfrontend -Xswiftc -enable-implicit-dynamic
-//    #if os(Android)
-//    @_dynamicReplacement(for: nonDynamicFunction())
-//    func newNonDynamicFunction() -> String {
-//        return "This is the new nondynamic function"
-//    }
-//    #endif
-}
-
-//extension Bundle {
-//    static var module: Bundle {
-//        fatalError("TODO")
-//    }
-//}
-
-//#if !os(Android)
-//extension Bundle {
-//    @_dynamicReplacement(for: url(forResource:withExtension:))
-//    public func replacementURL(forResource name: String?, withExtension ext: String?) -> URL? {
-////        fatalError("### replacementURL")
-//        logger.info("### url: forResource: \(name ?? "") withExtension: \(ext ?? "")")
-//        return self.url(forResource: name, withExtension: ext)
-////        guard let path = path(forResource: name, ofType: ext) else { return nil }
-////        return URL(fileURLWithPath: path)
-//    }
-//}
-//#endif
-
-#if os(Android)
-import Dispatch
-
-// see: https://forums.swift.org/t/prepitch-using-mainactor-and-dispatchqueue-main-async-without-foundation/61274/2
-@_silgen_name("_dispatch_main_queue_callback_4CF")
-public func dispatchMainQueueCallback(_ msg: UnsafeMutableRawPointer?) -> Void
-#endif
