@@ -19,6 +19,7 @@ let package = Package(
         .package(url: "https://source.skip.tools/skip-model.git", from: "1.0.0"),
         .package(url: "https://source.skip.tools/skip-ui.git", from: "1.0.0"),
         .package(url: "https://source.skip.tools/skip-bridge.git", branch: "main"),
+        .package(url: "https://source.skip.tools/skip-android-bridge.git", branch: "main"),
         .package(url: "https://source.skip.tools/swift-android-native.git", branch: "main"),
         .package(url: "https://github.com/apple/swift-algorithms.git", from: "1.2.0"),
     ],
@@ -34,8 +35,10 @@ let package = Package(
         .target(name: "AppDroidModel", dependencies: [
             .product(name: "SkipBridge", package: "skip-bridge"),
             .product(name: "SkipModel", package: "skip-model"),
+            .product(name: "SkipAndroidBridge", package: "skip-android-bridge"),
             .product(name: "Algorithms", package: "swift-algorithms"),
-            .product(name: "AndroidLogging", package: "swift-android-native", /*moduleAliases: ["AndroidLogging": "OSLog"],*/ condition: .when(platforms: [.android])),
+            .product(name: "AndroidNative", package: "swift-android-native"),
+//            .product(name: "AndroidLogging", package: "swift-android-native", /*moduleAliases: ["AndroidLogging": "OSLog"],*/ condition: .when(platforms: [.android])),
         ], resources: [.process("Resources"), /*.embedInCode("CodeResources/sample_resource.json")*/], plugins: [.plugin(name: "skipstone", package: "skip")]),
         .testTarget(name: "AppDroidModelTests", dependencies: [
             "AppDroidModel",
