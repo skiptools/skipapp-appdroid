@@ -2,7 +2,8 @@ import XCTest
 import Foundation
 import SkipBridge
 import Observation
-import SkipAndroidBridge
+import SkipAndroidBridgeKt
+import SkipBridgeKt
 @testable import AppDroidModel
 
 @available(macOS 13, *)
@@ -14,19 +15,20 @@ final class AppDroidModelTests: XCTestCase {
     }
 
     func testAppDroidModel() throws {
-        #if SKIP
-        XCTAssertEqual("/", getJavaSystemProperty("file.separator"))
-        #else
-        throw XCTSkip("getJavaSystemProperty only works in transpiled test")
-        #endif
+        // make sure the UserDefaults set/get is shared between view models
+        let vm1 = ViewModel()
+
+        vm1.slideSpeed = 0.5
+        let vm2 = ViewModel()
+        XCTAssertEqual(0.5, vm2.slideSpeed)
+
+        vm1.slideSpeed = 1.0
+        let vm3 = ViewModel()
+        XCTAssertEqual(1.0, vm3.slideSpeed)
     }
 
     func testClosure() {
         XCTAssertEqual("value = 1", swiftClosure1Var(1))
-    }
-
-    func testAndroidBridgeHelper() {
-        XCTAssertEqual("AB", testSupport_appendStrings("A", "B"))
     }
 
     func testObservable() {

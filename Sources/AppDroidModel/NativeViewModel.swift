@@ -1,5 +1,8 @@
 import Foundation
 import Observation
+#if canImport(FoundationNetworking)
+import FoundationNetworking
+#endif
 import SkipAndroidBridge
 
 fileprivate let logger: Logger = Logger(subsystem: "AppDroid", category: "NativeViewModel")
@@ -7,7 +10,6 @@ fileprivate let logger: Logger = Logger(subsystem: "AppDroid", category: "Native
 // doesn't work to intercept `extension ViewModel: Observation.Observable { }` added by @Observable…
 //extension ViewModel { typealias Observation = SkipBridge.Observation }
 
-// SKIP @BridgeToKotlin
 @Observable public class ViewModel {
     public var color = ColorModel()
     public var useMainActor: Bool = false
@@ -25,19 +27,18 @@ fileprivate let logger: Logger = Logger(subsystem: "AppDroid", category: "Native
     }
 
     /// A persistent value that stores the speed of the auto-slide feature.
-    public var slideSpeed: Double = getDoublePreference("slideSpeed") {
+    public var slideSpeed: Double = UserDefaults.standard.double(forKey: "slideSpeed") {
         didSet {
             // update the persistent store with the new value
-            setDoublePreference("slideSpeed", value: slideSpeed)
+            UserDefaults.standard.set(slideSpeed, forKey: "slideSpeed")
         }
     }
 
     public init() {
-        try! initAndroidBridge()
     }
 
     public func randomizeAsync() async {
-        logger.info("randomizeAsync invoked")
+//        logger.info("randomizeAsync invoked")
         if self.useMainActor {
             DispatchQueue.main.async {
                 self.randomize()
@@ -128,11 +129,12 @@ fileprivate let logger: Logger = Logger(subsystem: "AppDroid", category: "Native
         //let resourceData = try! Data(contentsOf: Bundle.module.url(forResource: "sample_resource", withExtension: "json")!)
 
         // call up to Kotlin to use SkipFoundation.Bundle.module to get the resource contents
-        guard let resourceData = try loadModuleBundleResourceContents(name: "sample_resource", ext: "json")?.data(using: .utf8) else {
-            throw NativeError(errorDescription: "Could not load resource")
-        }
-        let sample = try JSONDecoder().decode(SampleResource.self, from: resourceData)
-        return sample.message
+//        guard let resourceData = try loadModuleBundleResourceContents(name: "sample_resource", ext: "json")?.data(using: .utf8) else {
+//            throw NativeError(errorDescription: "Could not load resource")
+//        }
+//        let sample = try JSONDecoder().decode(SampleResource.self, from: resourceData)
+//        return sample.message
+        return "### FIXME"
     }
 
     struct SampleResource : Decodable {
@@ -161,7 +163,8 @@ fileprivate let logger: Logger = Logger(subsystem: "AppDroid", category: "Native
     public func throwError() throws {
         // TODO: implement Android resources for NSLocalizedString
         // 10-27 12:08:20.520 19166 19166 F DEBUG   : Abort message: 'AppDroidModel/resource_bundle_accessor.swift:12: Fatal error: could not load resource bundle: from /system/bin/skipapp-appdroid_AppDroidModel.resources or /Users/marc/Library/Developer/Xcode/DerivedData/Skip-Everything-aqywrhrzhkbvfseiqgxuufbdwdft/SourcePackages/plugins/skipapp-appdroid.output/AppDroidModel/skipstone/AppDroidModel/src/main/swift/.build/aarch64-unknown-linux-android24/debug/skipapp-appdroid_AppDroidModel.resources'
-        throw NativeError(errorDescription: isAndroid ? "Native Swift Error" : NSLocalizedString("Native Swift Error", bundle: .module, comment: "localized error message"))
+        //throw NativeError(errorDescription: isAndroid ? "Native Swift Error" : NSLocalizedString("Native Swift Error", bundle: .module, comment: "localized error message"))
+        throw NativeError(errorDescription: "Native Swift Error")
     }
 
     public func crash() {
@@ -177,7 +180,6 @@ struct NativeError: LocalizedError {
     }
 }
 
-// SKIP @BridgeToKotlin
 @Observable public class ColorModel {
     public var values = HSLValues()
 
@@ -226,7 +228,6 @@ struct NativeError: LocalizedError {
     }
 }
 
-// SKIP @BridgeToKotlin
 @Observable public class HSLValues {
     public var hue = 0.5
     public var saturation = 0.5
@@ -245,42 +246,5 @@ fileprivate protocol Randomizable where Self : Comparable {
 extension Double : Randomizable {
     mutating func randomize(in range: ClosedRange<Self>) {
         self = Self.random(in: range)
-    }
-}
-
-// SKIP @BridgeToKotlin
-public func callingEnvironment() -> String {
-    #if SKIP
-    return "Skip"
-    #elseif os(Android)
-    return "Android"
-    #elseif os(iOS)
-    return "iOS"
-    #else
-    return "other…"
-    #endif
-}
-
-// SKIP @BridgeToKotlin
-public func getJavaSystemPropertyViaSwift(_ name: String) -> String? {
-    getJavaSystemProperty(name)
-}
-
-// SKIP @BridgeToKotlin
-public var bridgedString = "😀" + "🚀"
-
-// SKIP @BridgeToKotlin
-public var swiftClosure1Var: (Int) -> String = { i in "value = \(i)" }
-
-// SKIP @BridgeToKotlin
-public class SwiftClass {
-    public var intVar = 1
-    public var optionalIntVar: Int? = nil
-
-    public init() {
-    }
-
-    public func getString() -> String {
-        "SwiftClass"
     }
 }

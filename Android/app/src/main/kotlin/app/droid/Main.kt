@@ -30,10 +30,8 @@ open class AndroidAppMain: Application {
     override fun onCreate() {
         super.onCreate()
         logger.info("starting app")
-        ProcessInfo.launch(applicationContext)
-
         logger.info("loading AppDroidModel")
-        skip.android.bridge.AndroidBridge.initBridge("AppDroidModel")
+        skip.android.bridge.kt.AndroidBridge.initBridge(this, "AppDroidModel")
         logger.info("loaded AppDroidModel")
     }
 
