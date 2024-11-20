@@ -1,14 +1,14 @@
 import Foundation
 import Observation
-#if canImport(FoundationNetworking)
-import FoundationNetworking
-#endif
-import SkipAndroidBridge
+import SkipFuse
 
 fileprivate let logger: Logger = Logger(subsystem: "AppDroid", category: "NativeViewModel")
 
-// doesn't work to intercept `extension ViewModel: Observation.Observable { }` added by @Observable…
-//extension ViewModel { typealias Observation = SkipBridge.Observation }
+#if os(Android)
+let defaults = UserDefaults.bridged
+#else
+let defaults = UserDefaults.standard
+#endif
 
 @Observable public class ViewModel {
     public var color = ColorModel()
@@ -27,10 +27,10 @@ fileprivate let logger: Logger = Logger(subsystem: "AppDroid", category: "Native
     }
 
     /// A persistent value that stores the speed of the auto-slide feature.
-    public var slideSpeed: Double = UserDefaults.standard.double(forKey: "slideSpeed") {
+    public var slideSpeed: Double = defaults.double(forKey: "slideSpeed") {
         didSet {
             // update the persistent store with the new value
-            UserDefaults.standard.set(slideSpeed, forKey: "slideSpeed")
+            defaults.set(slideSpeed, forKey: "slideSpeed")
         }
     }
 
@@ -38,7 +38,7 @@ fileprivate let logger: Logger = Logger(subsystem: "AppDroid", category: "Native
     }
 
     public func randomizeAsync() async {
-//        logger.info("randomizeAsync invoked")
+        logger.info("randomizeAsync invoke")
         if self.useMainActor {
             DispatchQueue.main.async {
                 self.randomize()

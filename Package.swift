@@ -18,8 +18,7 @@ let package = Package(
         .package(url: "https://source.skip.tools/skip.git", from: "1.1.10"),
         .package(url: "https://source.skip.tools/skip-model.git", from: "1.0.0"),
         .package(url: "https://source.skip.tools/skip-ui.git", from: "1.0.0"),
-        .package(url: "https://source.skip.tools/skip-bridge.git", branch: "main"),
-        .package(url: "https://source.skip.tools/skip-android-bridge.git", branch: "main"),
+        .package(url: "https://source.skip.tools/skip-fuse.git", branch: "main"),
         .package(url: "https://github.com/apple/swift-algorithms.git", from: "1.2.0"),
     ],
     targets: [
@@ -35,7 +34,7 @@ let package = Package(
         // mode=swift bridging=true
         .target(name: "AppDroidModel", dependencies: [
             .product(name: "SkipModel", package: "skip-model"),
-            .product(name: "SkipAndroidBridgeKt", package: "skip-android-bridge"),
+            .product(name: "SkipFuse", package: "skip-fuse"),
             .product(name: "Algorithms", package: "swift-algorithms"),
         ], resources: [.process("Resources"), /*.embedInCode("CodeResources/sample_resource.json")*/], plugins: [.plugin(name: "skipstone", package: "skip")]),
         .testTarget(name: "AppDroidModelTests", dependencies: [
