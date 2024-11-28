@@ -1,8 +1,6 @@
 import XCTest
 import Foundation
-import SkipBridge
 import Observation
-import SkipAndroidBridgeKt
 import SkipBridgeKt
 @testable import AppDroidModel
 

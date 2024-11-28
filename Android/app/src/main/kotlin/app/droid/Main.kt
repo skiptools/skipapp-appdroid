@@ -31,7 +31,7 @@ open class AndroidAppMain: Application {
         super.onCreate()
         logger.info("starting app")
         logger.info("loading AppDroidModel")
-        skip.android.bridge.kt.AndroidBridge.initBridge(this, "AppDroidModel")
+        ProcessInfo.launch(applicationContext)
         logger.info("loaded AppDroidModel")
     }
 
