@@ -49,10 +49,16 @@ struct BridgeView : View {
                     viewModel.randomize()
                 }
                 .buttonStyle(.borderedProminent)
-                Button("Shuffle (Async)") {
+                Button("Async") {
                     Task { await viewModel.randomizeAsync() }
                 }
                 .buttonStyle(.bordered)
+                .foregroundStyle(.indigo)
+                Button("Delay") {
+                    viewModel.randomizeDelay()
+                }
+                .buttonStyle(.bordered)
+                .foregroundStyle(.teal)
             }
             .font(.title2.bold())
 

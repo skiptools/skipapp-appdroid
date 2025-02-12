@@ -18,7 +18,7 @@ let package = Package(
         .package(url: "https://source.skip.tools/skip.git", from: "1.1.10"),
         .package(url: "https://source.skip.tools/skip-model.git", from: "1.0.0"),
         .package(url: "https://source.skip.tools/skip-ui.git", from: "1.0.0"),
-        .package(url: "https://source.skip.tools/skip-fuse.git", branch: "main"),
+        .package(url: "https://source.skip.tools/skip-fuse.git", from: "1.0.0"),
         .package(url: "https://github.com/apple/swift-algorithms.git", from: "1.2.0"),
     ],
     targets: [

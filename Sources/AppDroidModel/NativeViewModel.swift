@@ -1,6 +1,7 @@
 import Foundation
 import Observation
 import SkipFuse
+import CoreFoundation
 
 fileprivate let logger: Logger = Logger(subsystem: "AppDroid", category: "NativeViewModel")
 
@@ -12,7 +13,7 @@ let defaults = UserDefaults.standard
 
 @Observable public class ViewModel {
     public var color = ColorModel()
-    public var useMainActor: Bool = false
+    public var useMainActor: Bool = true
 
     public var autoSlide: Bool = false {
         didSet {
@@ -41,11 +42,29 @@ let defaults = UserDefaults.standard
         logger.info("randomizeAsync invoke")
         if self.useMainActor {
             DispatchQueue.main.async {
+            //Task { @MainActor in
                 self.randomize()
             }
         } else {
             randomize()
         }
+    }
+
+    public func randomizeSync() async {
+        logger.info("randomizeSync invoke")
+        if self.useMainActor {
+            DispatchQueue.main.sync {
+                self.randomize()
+            }
+        } else {
+            randomize()
+        }
+    }
+
+    public func randomizeDelay() {
+        //DispatchQueue.global(qos: .userInitiated).async(execute: randomize)
+        //DispatchQueue.global(qos: .userInitiated).asyncAfter(deadline: .now() + 0.5, execute: randomize)
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5, execute: randomize)
     }
 
     //public func randomize(delay: Double) async {
@@ -61,7 +80,6 @@ let defaults = UserDefaults.standard
             while self.autoSlide == true {
                 if self.useMainActor == true {
                     await self.slideValuesMain()
-                    self.dispatchMain()
                 } else {
                     self.slideValues()
                 }
@@ -70,31 +88,13 @@ let defaults = UserDefaults.standard
         }
     }
 
-    private func dispatchMain() {
-        // FIXME: MainActor call doesn't work on Android (probably related to DispatchQueue.main.async also not working)
-        // https://forums.swift.org/t/prepitch-using-mainactor-and-dispatchqueue-main-async-without-foundation/61274/2
-#if os(Android)
-        //CFRunLoopRunInMode(kCFRunLoopDefaultMode, 0.01, true) // doesn't work
-        //dispatchMainQueueCallback(nil) // doesn't work
-        //RunLoop.main.run(until: Date.distantFuture)
-        //RunLoop.main.run()
-#endif
-    }
-
-    /// Bump the values on the main actor – not currently working on Android
+    /// Bump the values on the main actor
     @MainActor private func slideValuesMain() {
         self.slideValueSet()
     }
 
-    public func slideValues() { // (after: Double? = 0.0) {
+    public func slideValues() {
         self.slideValueSet()
-
-        // FIXME: does not work on Android. Perhaps we need to manually start the DispatchQueue's run loop or something?
-        // if let after = after {
-        //     DispatchQueue.main.asyncAfter(deadline: .now() + seconds(Int(after * 1000.0))) {
-        //         self.slideValueSet()
-        //     }
-        // }
     }
 
     private func slideValueSet() {
@@ -129,11 +129,11 @@ let defaults = UserDefaults.standard
         //let resourceData = try! Data(contentsOf: Bundle.module.url(forResource: "sample_resource", withExtension: "json")!)
 
         // call up to Kotlin to use SkipFoundation.Bundle.module to get the resource contents
-//        guard let resourceData = try loadModuleBundleResourceContents(name: "sample_resource", ext: "json")?.data(using: .utf8) else {
-//            throw NativeError(errorDescription: "Could not load resource")
-//        }
-//        let sample = try JSONDecoder().decode(SampleResource.self, from: resourceData)
-//        return sample.message
+        //        guard let resourceData = try loadModuleBundleResourceContents(name: "sample_resource", ext: "json")?.data(using: .utf8) else {
+        //            throw NativeError(errorDescription: "Could not load resource")
+        //        }
+        //        let sample = try JSONDecoder().decode(SampleResource.self, from: resourceData)
+        //        return sample.message
         return "### FIXME"
     }
 
