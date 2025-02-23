@@ -1,7 +1,7 @@
 import XCTest
 import Foundation
 import Observation
-import SkipBridgeKt
+import SkipBridge
 @testable import AppDroidModel
 
 @available(macOS 13, *)
